@@ -41,12 +41,3 @@ def get_all_cars(connection):
     rows = cursor.fetchall()
     return rows
 
-if __name__ == "__main__":
-    connection = create_connection()
-    create_table(connection)
-
-    cars = get_all_cars(connection)
-    for car in cars:
-        print(car)
-
-    connection.close()
