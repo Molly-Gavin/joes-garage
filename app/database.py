@@ -35,23 +35,18 @@ def add_car(connection, make, model, year, location, photo_path, note, rating, d
     connection.commit()
     return cursor.lastrowid
 
+def get_all_cars(connection):
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM cars")
+    rows = cursor.fetchall()
+    return rows
+
 if __name__ == "__main__":
     connection = create_connection()
     create_table(connection)
 
-    new_id = add_car(
-        connection,
-        make="Toyota",
-        model="Supra",
-        year=1998,
-        location="Grocery store parking lot",
-        photo_path="data/photos/supra.jpg",
-        note="First car I ever spotted for this",
-        rating=5,
-        date_added="2026-09-17"
-    )
-
-    print(f"Added car with id {new_id}")
+    cars = get_all_cars(connection)
+    for car in cars:
+        print(car)
 
     connection.close()
-    
