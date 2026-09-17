@@ -1,11 +1,12 @@
-from database import create_connection, create_table, get_all_cars, add_car
+from database import create_connection, create_table, get_all_cars, add_car, update_car
 
 
 def show_menu():
     print("\nJoe's Garage")
     print("1. View garage")
     print("2. Add a car")
-    print("3. Quit")
+    print("3. Edit a car")
+    print("4. Quit")
 
 
 def main():
@@ -41,11 +42,38 @@ def main():
             )
             print("Car added.")
         elif choice == "3":
+            cars = get_all_cars(connection)
+            for car in cars:
+                print(car)
+
+            car_id = input("Enter the id of the car to edit: ")
+
+            make = input("Make: ")
+            model = input("Model: ")
+            year = input("Year: ")
+            location = input("Where did you spot it: ")
+            note = input("Note: ")
+            rating = input("Rating (1 to 5): ")
+
+            update_car(
+                connection,
+                car_id=car_id,
+                make=make,
+                model=model,
+                year=year,
+                location=location,
+                photo_path="",
+                note=note,
+                rating=rating,
+                date_added="2026-09-17"
+            )
+            print("Car updated.")
+        elif choice == "4":
             break
         else:
             print("That's not a valid option, try again.")
 
-        connection.close()
+    connection.close()
 
 
 if __name__ == "__main__":

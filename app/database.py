@@ -35,6 +35,15 @@ def add_car(connection, make, model, year, location, photo_path, note, rating, d
     connection.commit()
     return cursor.lastrowid
 
+def update_car(connection, car_id, make, model, year, location, photo_path, note, rating, date_added):
+    cursor = connection.cursor()
+    cursor.execute("""
+        UPDATE cars
+        SET make = ?, model = ?, year = ?, location = ?, photo_path = ?, note = ?, rating = ?, date_added = ?
+        WHERE id = ?
+    """, (make, model, year, location, photo_path, note, rating, date_added, car_id))
+    connection.commit()
+
 def get_all_cars(connection):
     cursor = connection.cursor()
     cursor.execute("SELECT * FROM cars")
