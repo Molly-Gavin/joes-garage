@@ -1,5 +1,6 @@
 from database import create_connection, create_table, get_all_cars, add_car, update_car, delete_car
 from datetime import date
+from identify import identify_make
 
 
 def show_menu():
@@ -24,7 +25,10 @@ def main():
             for car in cars:
                 print(car)
         elif choice == "2":
-            make = input("Make: ")
+            photo_path = input("Path to the photo: ")
+            make = identify_make(photo_path)
+            print(f"Detected make: {make}")
+
             model = input("Model: ")
             year = input("Year: ")
             location = input("Where did you spot it: ")
@@ -37,7 +41,7 @@ def main():
                 model=model,
                 year=year,
                 location=location,
-                photo_path="",
+                photo_path=photo_path,
                 note=note,
                 rating=rating,
                 date_added=str(date.today())
@@ -85,6 +89,8 @@ def main():
             print("Car deleted.")
         elif choice == "5":
             break
+        else:
+            print("That's not a valid option, try again.")
 
     connection.close()
 
