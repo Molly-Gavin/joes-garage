@@ -1,4 +1,4 @@
-from database import create_connection, create_table, get_all_cars, add_car, update_car
+from database import create_connection, create_table, get_all_cars, add_car, update_car, delete_car
 
 
 def show_menu():
@@ -6,7 +6,8 @@ def show_menu():
     print("1. View garage")
     print("2. Add a car")
     print("3. Edit a car")
-    print("4. Quit")
+    print("4. Delete a car")
+    print("5. Quit")
 
 
 def main():
@@ -69,9 +70,15 @@ def main():
             )
             print("Car updated.")
         elif choice == "4":
+            cars = get_all_cars(connection)
+            for car in cars:
+                print(car)
+
+            car_id = input("Enter the id of the car to delete: ")
+            delete_car(connection, car_id)
+            print("Car deleted.")
+        elif choice == "5":
             break
-        else:
-            print("That's not a valid option, try again.")
 
     connection.close()
 

@@ -44,6 +44,11 @@ def update_car(connection, car_id, make, model, year, location, photo_path, note
     """, (make, model, year, location, photo_path, note, rating, date_added, car_id))
     connection.commit()
 
+def delete_car(connection, car_id):
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM cars WHERE id = ?", (car_id,))
+    connection.commit()
+
 def get_all_cars(connection):
     cursor = connection.cursor()
     cursor.execute("SELECT * FROM cars")
