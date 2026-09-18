@@ -1,5 +1,6 @@
 import sqlite3
 import os
+from datetime import date
 
 DB_PATH = os.path.join("data", "garage.db")
 

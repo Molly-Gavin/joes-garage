@@ -1,4 +1,5 @@
 from database import create_connection, create_table, get_all_cars, add_car, update_car, delete_car
+from datetime import date
 
 
 def show_menu():
@@ -39,7 +40,7 @@ def main():
                 photo_path="",
                 note=note,
                 rating=rating,
-                date_added="2026-09-17"
+                date_added=str(date.today())
             )
             print("Car added.")
         elif choice == "3":
@@ -48,6 +49,11 @@ def main():
                 print(car)
 
             car_id = input("Enter the id of the car to edit: ")
+
+            existing_car = None
+            for car in cars:
+                if str(car[0]) == car_id:
+                    existing_car = car
 
             make = input("Make: ")
             model = input("Model: ")
@@ -66,7 +72,7 @@ def main():
                 photo_path="",
                 note=note,
                 rating=rating,
-                date_added="2026-09-17"
+                date_added=existing_car[8]
             )
             print("Car updated.")
         elif choice == "4":
