@@ -1,4 +1,4 @@
-from database import create_connection, create_table, get_all_cars, add_car, update_car, delete_car
+from database import create_connection, create_table, get_all_cars, add_car, update_car, delete_car, get_cars_by_date, get_cars_by_rating, get_cars_by_location
 from datetime import date
 from identify import identify_make
 
@@ -21,7 +21,26 @@ def main():
         choice = input("Choose an option: ")
 
         if choice == "1":
-            cars = get_all_cars(connection)
+            print("\nView by:")
+            print("a. Everything")
+            print("b. Newest first")
+            print("c. Highest rated first")
+            print("d. Location")
+            view_choice = input("Choose an option: ")
+
+            if view_choice == "a":
+                cars = get_all_cars(connection)
+            elif view_choice == "b":
+                cars = get_cars_by_date(connection)
+            elif view_choice == "c":
+                cars = get_cars_by_rating(connection)
+            elif view_choice == "d":
+                location = input("Search location: ")
+                cars = get_cars_by_location(connection, location)
+            else:
+                print("That's not a valid option, try again.")
+                cars = []
+
             for car in cars:
                 print(car)
         elif choice == "2":

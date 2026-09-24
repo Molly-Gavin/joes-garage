@@ -56,3 +56,20 @@ def get_all_cars(connection):
     rows = cursor.fetchall()
     return rows
 
+def get_cars_by_date(connection):
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM cars ORDER BY date_added DESC")
+    return cursor.fetchall()
+
+
+def get_cars_by_rating(connection):
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM cars ORDER BY rating DESC")
+    return cursor.fetchall()
+
+
+def get_cars_by_location(connection, location):
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM cars WHERE location LIKE ?", (f"%{location}%",))
+    return cursor.fetchall()
+
