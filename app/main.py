@@ -104,8 +104,23 @@ def main():
                 print(car)
 
             car_id = input("Enter the id of the car to delete: ")
-            delete_car(connection, car_id)
-            print("Car deleted.")
+
+            car_to_delete = None
+            for car in cars:
+                if str(car[0]) == car_id:
+                    car_to_delete = car
+
+            if car_to_delete is None:
+                print("No car found with that id.")
+            else:
+                print(f"You are about to delete: {car_to_delete}")
+                confirm = input("Type yes to confirm: ")
+
+                if confirm.lower() == "yes":
+                    delete_car(connection, car_id)
+                    print("Car deleted.")
+                else:
+                    print("Delete canceled.")
         elif choice == "5":
             break
         else:
