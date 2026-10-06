@@ -78,26 +78,30 @@ def main():
                 if str(car[0]) == car_id:
                     existing_car = car
 
-            make = input("Make: ")
-            model = input("Model: ")
-            year = input("Year: ")
-            location = input("Where did you spot it: ")
-            note = input("Note: ")
-            rating = input("Rating (1 to 5): ")
+            if existing_car is None:
+                print("No car found with that id.")
+            else:
+                print("Press Enter to keep the current value.")
+                make = input(f"Make [{existing_car[1]}]: ") or existing_car[1]
+                model = input(f"Model [{existing_car[2]}]: ") or existing_car[2]
+                year = input(f"Year [{existing_car[3]}]: ") or existing_car[3]
+                location = input(f"Where spotted [{existing_car[4]}]: ") or existing_car[4]
+                note = input(f"Note [{existing_car[6]}]: ") or existing_car[6]
+                rating = input(f"Rating [{existing_car[7]}]: ") or existing_car[7]
 
-            update_car(
-                connection,
-                car_id=car_id,
-                make=make,
-                model=model,
-                year=year,
-                location=location,
-                photo_path="",
-                note=note,
-                rating=rating,
-                date_added=existing_car[8]
-            )
-            print("Car updated.")
+                update_car(
+                    connection,
+                    car_id=car_id,
+                    make=make,
+                    model=model,
+                    year=year,
+                    location=location,
+                    photo_path=existing_car[5],
+                    note=note,
+                    rating=rating,
+                    date_added=existing_car[8]
+                )
+                print("Car updated.")
         elif choice == "4":
             cars = get_all_cars(connection)
             for car in cars:
