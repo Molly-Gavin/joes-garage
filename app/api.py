@@ -1,9 +1,22 @@
+from datetime import date
+
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
 import uvicorn
 
-from database import create_connection, create_table, get_all_cars, delete_car
+from database import create_connection, create_table, get_all_cars, add_car, delete_car
 
 app = FastAPI()
+
+
+class NewCar(BaseModel):
+    make: str
+    model: str
+    year: int
+    location: str = ""
+    note: str = ""
+    rating: int = Field(ge=1, le=5)
+    photo_path: str = ""
 
 
 def car_to_dict(car):
@@ -51,6 +64,26 @@ def get_car(car_id: int):
     if car is None:
         raise HTTPException(status_code=404, detail="Car not found")
 
+    return car_to_dict(car)
+
+
+@app.post("/cars", status_code=201)
+def create_car(new_car: NewCar):
+    connection = create_connection()
+    create_table(connection)
+    new_id = add_car(
+        connection,
+        make=new_car.make,
+        model=new_car.model,
+        year=new_car.year,
+        location=new_car.location,
+        photo_path=new_car.photo_path,
+        note=new_car.note,
+        rating=new_car.rating,
+        date_added=str(date.today()),
+    )
+    car = find_car(connection, new_id)
+    connection.close()
     return car_to_dict(car)
 
 
