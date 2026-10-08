@@ -2,3 +2,4 @@ venv/
 data/garage.db
 __pycache__/
 data/photos/
+.DS_Store
