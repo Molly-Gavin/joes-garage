@@ -1,12 +1,19 @@
+import os
+import shutil
+import uuid
 from datetime import date
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 import uvicorn
 
 from database import create_connection, create_table, get_all_cars, add_car, delete_car
+from identify import identify_make
 
 app = FastAPI()
+
+PHOTO_DIR = os.path.join("data", "photos")
+ALLOWED_EXTENSIONS = (".jpg", ".jpeg", ".png")
 
 
 class NewCar(BaseModel):
@@ -65,6 +72,23 @@ def get_car(car_id: int):
         raise HTTPException(status_code=404, detail="Car not found")
 
     return car_to_dict(car)
+
+
+@app.post("/identify")
+def identify_photo(photo: UploadFile = File(...)):
+    extension = os.path.splitext(photo.filename)[1].lower()
+    if extension not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Please upload a JPG or PNG photo")
+
+    os.makedirs(PHOTO_DIR, exist_ok=True)
+    saved_name = f"{uuid.uuid4().hex}{extension}"
+    saved_path = os.path.join(PHOTO_DIR, saved_name)
+
+    with open(saved_path, "wb") as saved_file:
+        shutil.copyfileobj(photo.file, saved_file)
+
+    make = identify_make(saved_path)
+    return {"make": make, "photo_path": saved_path}
 
 
 @app.post("/cars", status_code=201)
