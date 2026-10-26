@@ -7,19 +7,62 @@
   <style>
     body { font-family: Arial, sans-serif; background: #f2f2f2; margin: 0; padding: 16px; }
     h1 { text-align: center; }
-    #garage { max-width: 700px; margin: 0 auto; }
-    .card { background: white; border-radius: 8px; padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    #garage, #addForm { max-width: 700px; margin: 0 auto 16px; }
+    .card, #addForm { background: white; border-radius: 8px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    .card { margin-bottom: 12px; }
     .card img { width: 100%; max-height: 260px; object-fit: cover; border-radius: 6px; }
     .title { font-size: 1.2em; font-weight: bold; margin: 8px 0 4px; }
     .small { color: #555; font-size: 0.9em; margin: 2px 0; }
     .stars { color: #e0a000; font-size: 1.2em; }
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    input, select { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; font-size: 1em; }
+    button { margin-top: 14px; padding: 10px 16px; font-size: 1em; }
   </style>
 </head>
 <body>
   <h1>Joe's Garage</h1>
+
+  <form id="addForm">
+    <h2>Add a car</h2>
+
+    <label>Photo
+      <input type="file" id="photo" accept="image/*">
+    </label>
+    <div id="status" class="small"></div>
+
+    <label>Make
+      <input type="text" id="make" required>
+    </label>
+    <label>Model
+      <input type="text" id="model" required>
+    </label>
+    <label>Year
+      <input type="number" id="year" min="1886" max="2100" required>
+    </label>
+    <label>Where did you spot it
+      <input type="text" id="location">
+    </label>
+    <label>Note
+      <input type="text" id="note">
+    </label>
+    <label>Rating
+      <select id="rating">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5" selected>5</option>
+      </select>
+    </label>
+
+    <button type="submit">Save car</button>
+  </form>
+
   <div id="garage">Loading...</div>
 
   <script>
+    let savedPhotoPath = "";
+
     async function loadGarage() {
       const response = await fetch("/cars");
       const cars = await response.json();
@@ -64,6 +107,64 @@
         garage.appendChild(card);
       }
     }
+
+    document.getElementById("photo").addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      const status = document.getElementById("status");
+      if (!file) {
+        return;
+      }
+
+      status.textContent = "Identifying the car...";
+      const formData = new FormData();
+      formData.append("photo", file);
+
+      try {
+        const response = await fetch("/identify", { method: "POST", body: formData });
+        if (!response.ok) {
+          const problem = await response.json();
+          status.textContent = "Could not identify: " + problem.detail;
+          return;
+        }
+        const result = await response.json();
+        document.getElementById("make").value = result.make;
+        savedPhotoPath = result.photo_path;
+        status.textContent = "Detected make: " + result.make + ". Change it if it looks wrong.";
+      } catch (error) {
+        status.textContent = "Something went wrong. Is the server running?";
+      }
+    });
+
+    document.getElementById("addForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const status = document.getElementById("status");
+
+      const newCar = {
+        make: document.getElementById("make").value,
+        model: document.getElementById("model").value,
+        year: Number(document.getElementById("year").value),
+        location: document.getElementById("location").value,
+        note: document.getElementById("note").value,
+        rating: Number(document.getElementById("rating").value),
+        photo_path: savedPhotoPath
+      };
+
+      const response = await fetch("/cars", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newCar)
+      });
+
+      if (!response.ok) {
+        status.textContent = "Could not save the car. Check the fields and try again.";
+        return;
+      }
+
+      event.target.reset();
+      savedPhotoPath = "";
+      status.textContent = "Car saved.";
+      loadGarage();
+    });
 
     loadGarage();
   </script>
