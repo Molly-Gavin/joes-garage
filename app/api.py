@@ -4,6 +4,8 @@ import uuid
 from datetime import date
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 import uvicorn
 
@@ -14,6 +16,9 @@ app = FastAPI()
 
 PHOTO_DIR = os.path.join("data", "photos")
 ALLOWED_EXTENSIONS = (".jpg", ".jpeg", ".png")
+
+os.makedirs(PHOTO_DIR, exist_ok=True)
+app.mount("/photos", StaticFiles(directory=PHOTO_DIR), name="photos")
 
 
 class NewCar(BaseModel):
@@ -50,7 +55,7 @@ def find_car(connection, car_id):
 
 @app.get("/")
 def home():
-    return {"message": "Welcome to Joe's Garage"}
+    return FileResponse(os.path.join("web", "index.html"))
 
 
 @app.get("/cars")
@@ -80,7 +85,6 @@ def identify_photo(photo: UploadFile = File(...)):
     if extension not in ALLOWED_EXTENSIONS:
         raise HTTPException(status_code=400, detail="Please upload a JPG or PNG photo")
 
-    os.makedirs(PHOTO_DIR, exist_ok=True)
     saved_name = f"{uuid.uuid4().hex}{extension}"
     saved_path = os.path.join(PHOTO_DIR, saved_name)
 
