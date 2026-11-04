@@ -104,6 +104,22 @@
         note.textContent = car.note;
         card.appendChild(note);
 
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete";
+        deleteButton.addEventListener("click", async () => {
+          const name = car.year + " " + car.make + " " + car.model;
+          if (!confirm("Delete " + name + "?")) {
+            return;
+          }
+          const result = await fetch("/cars/" + car.id, { method: "DELETE" });
+          if (result.ok) {
+            loadGarage();
+          } else {
+            alert("Could not delete that car.");
+          }
+        });
+        card.appendChild(deleteButton);
+
         garage.appendChild(card);
       }
     }
