@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 import uvicorn
 
-from database import create_connection, create_table, get_all_cars, add_car, delete_car
+from database import create_connection, create_table, get_all_cars, add_car, update_car, delete_car
 from identify import identify_make
 
 app = FastAPI()
@@ -29,6 +29,15 @@ class NewCar(BaseModel):
     note: str = ""
     rating: int = Field(ge=1, le=5)
     photo_path: str = ""
+
+
+class CarChanges(BaseModel):
+    make: str
+    model: str
+    year: int
+    location: str = ""
+    note: str = ""
+    rating: int = Field(ge=1, le=5)
 
 
 def car_to_dict(car):
@@ -113,6 +122,32 @@ def create_car(new_car: NewCar):
     car = find_car(connection, new_id)
     connection.close()
     return car_to_dict(car)
+
+
+@app.put("/cars/{car_id}")
+def change_car(car_id: int, changes: CarChanges):
+    connection = create_connection()
+    existing_car = find_car(connection, car_id)
+
+    if existing_car is None:
+        connection.close()
+        raise HTTPException(status_code=404, detail="Car not found")
+
+    update_car(
+        connection,
+        car_id=car_id,
+        make=changes.make,
+        model=changes.model,
+        year=changes.year,
+        location=changes.location,
+        photo_path=existing_car[5],
+        note=changes.note,
+        rating=changes.rating,
+        date_added=existing_car[8],
+    )
+    updated_car = find_car(connection, car_id)
+    connection.close()
+    return car_to_dict(updated_car)
 
 
 @app.delete("/cars/{car_id}")
