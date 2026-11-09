@@ -1,0 +1,19 @@
+name: Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Install what the tests need
+        run: pip install fastapi uvicorn python-multipart httpx pytest
+      - name: Run the tests
+        run: python -m pytest
