@@ -7,6 +7,7 @@ DB_PATH = os.path.join("data", "garage.db")
 
 def create_connection():
     connection = sqlite3.connect(DB_PATH)
+    create_table(connection)
     return connection
 
 
