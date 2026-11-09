@@ -1,4 +1,5 @@
 # Joe's Garage
+![Tests](https://github.com/Molly-Gavin/joes-garage/actions/workflows/tests.yml/badge.svg)
 
 A web app for spotting cars. Take a photo of a car, and the app guesses the make. Then add the model, year, where you saw it, a note, and a rating from 1 to 5. Every car is saved in your own garage.
 
