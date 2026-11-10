@@ -65,6 +65,6 @@ python3 -m pytest
 - `app/api.py` holds the web routes
 - `app/database.py` holds the database functions
 - `app/identify.py` runs the photo model
-- `app/main.py` is the original command line menu
+- - `app/main.py` is an optional command line version of the app. Run it with `python3 app/main.py`
 - `web/index.html` is the web page
 - `tests/` holds the automated tests
