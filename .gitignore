@@ -4,3 +4,4 @@ __pycache__/
 data/photos/
 .DS_Store
 .pytest_cache/
+.env

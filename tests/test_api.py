@@ -15,10 +15,16 @@ NEW_CAR = {
 
 
 @pytest.fixture
-def client(tmp_path, monkeypatch):
+def anonymous_client(tmp_path, monkeypatch):
     monkeypatch.setattr(database, "DB_PATH", str(tmp_path / "test_garage.db"))
     monkeypatch.setattr(api, "PHOTO_DIR", str(tmp_path))
     return TestClient(api.app)
+
+
+@pytest.fixture
+def client(anonymous_client):
+    anonymous_client.post("/login", data={"password": "test-password"})
+    return anonymous_client
 
 
 def test_garage_starts_empty(client):

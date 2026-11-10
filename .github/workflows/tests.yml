@@ -14,6 +14,6 @@ jobs:
         with:
           python-version: "3.14"
       - name: Install what the tests need
-        run: pip install fastapi uvicorn python-multipart httpx pytest
+        run: pip install fastapi uvicorn python-multipart httpx pytest itsdangerous python-dotenv
       - name: Run the tests
         run: python -m pytest

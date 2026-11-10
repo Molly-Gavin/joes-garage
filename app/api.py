@@ -1,16 +1,30 @@
 import os
+import secrets
 import shutil
 import uuid
 from datetime import date
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from dotenv import load_dotenv
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from itsdangerous import BadSignature, URLSafeTimedSerializer
 from pydantic import BaseModel, Field
 import uvicorn
 
 from database import create_connection, create_table, get_all_cars, add_car, update_car, delete_car
 from identify import identify_make
+
+load_dotenv()
+
+GARAGE_PASSWORD = os.environ.get("GARAGE_PASSWORD")
+GARAGE_SECRET = os.environ.get("GARAGE_SECRET")
+if not GARAGE_PASSWORD or not GARAGE_SECRET:
+    raise RuntimeError("Set GARAGE_PASSWORD and GARAGE_SECRET in the .env file")
+
+COOKIE_NAME = "garage_login"
+SESSION_SECONDS = 30 * 24 * 60 * 60
+signer = URLSafeTimedSerializer(GARAGE_SECRET)
 
 app = FastAPI()
 
@@ -62,6 +76,54 @@ def find_car(connection, car_id):
     return None
 
 
+def is_logged_in(request):
+    token = request.cookies.get(COOKIE_NAME)
+    if not token:
+        return False
+    try:
+        signer.loads(token, max_age=SESSION_SECONDS)
+        return True
+    except BadSignature:
+        return False
+
+
+@app.middleware("http")
+async def require_login(request: Request, call_next):
+    if request.url.path == "/login" or is_logged_in(request):
+        return await call_next(request)
+    if request.url.path == "/":
+        return RedirectResponse("/login")
+    return JSONResponse({"detail": "Not logged in"}, status_code=401)
+
+
+@app.get("/login")
+def login_page():
+    return FileResponse(os.path.join("web", "login.html"))
+
+
+@app.post("/login")
+def login(password: str = Form(...)):
+    if not secrets.compare_digest(password.encode(), GARAGE_PASSWORD.encode()):
+        return RedirectResponse("/login?error=1", status_code=303)
+
+    response = RedirectResponse("/", status_code=303)
+    response.set_cookie(
+        COOKIE_NAME,
+        signer.dumps("ok"),
+        max_age=SESSION_SECONDS,
+        httponly=True,
+        samesite="lax",
+    )
+    return response
+
+
+@app.post("/logout")
+def logout():
+    response = RedirectResponse("/login", status_code=303)
+    response.delete_cookie(COOKIE_NAME)
+    return response
+
+
 @app.get("/")
 def home():
     return FileResponse(os.path.join("web", "index.html"))
@@ -70,7 +132,6 @@ def home():
 @app.get("/cars")
 def list_cars():
     connection = create_connection()
-    create_table(connection)
     cars = get_all_cars(connection)
     connection.close()
     return [car_to_dict(car) for car in cars]
@@ -107,7 +168,6 @@ def identify_photo(photo: UploadFile = File(...)):
 @app.post("/cars", status_code=201)
 def create_car(new_car: NewCar):
     connection = create_connection()
-    create_table(connection)
     new_id = add_car(
         connection,
         make=new_car.make,
