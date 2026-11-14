@@ -124,3 +124,37 @@ def test_identify_returns_make_and_saves_photo(client):
     result = response.json()
     assert result["make"] == "TestMake"
     assert result["photo_path"].endswith(".jpg")
+
+def test_cars_are_locked_without_login(anonymous_client):
+    response = anonymous_client.get("/cars")
+    assert response.status_code == 401
+
+
+def test_home_page_redirects_to_login(anonymous_client):
+    response = anonymous_client.get("/", follow_redirects=False)
+    assert response.status_code == 307
+    assert response.headers["location"] == "/login"
+
+
+def test_wrong_password_is_rejected(anonymous_client):
+    response = anonymous_client.post(
+        "/login", data={"password": "wrong"}, follow_redirects=False
+    )
+    assert response.headers["location"] == "/login?error=1"
+    assert anonymous_client.get("/cars").status_code == 401
+
+
+def test_correct_password_unlocks_the_garage(anonymous_client):
+    anonymous_client.post("/login", data={"password": "test-password"})
+    assert anonymous_client.get("/cars").status_code == 200
+
+
+def test_forged_cookie_is_rejected(anonymous_client):
+    anonymous_client.cookies.set("garage_login", "not-a-real-cookie")
+    assert anonymous_client.get("/cars").status_code == 401
+
+
+def test_logout_locks_the_garage_again(client):
+    assert client.get("/cars").status_code == 200
+    client.post("/logout")
+    assert client.get("/cars").status_code == 401
